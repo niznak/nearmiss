@@ -1,0 +1,528 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <meta name="theme-color" content="#FF4B2B" />
+  <title>아차사고 신고</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700;900&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --red: #E8321A;
+      --red-dark: #C0240E;
+      --red-light: #FF6B4A;
+      --orange: #FF8C00;
+      --bg: #F5F0EB;
+      --card: #FFFFFF;
+      --text: #1A1A1A;
+      --text-sub: #6B6B6B;
+      --border: #E0D8D0;
+      --shadow: 0 4px 24px rgba(0,0,0,0.10);
+      --radius: 16px;
+    }
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: 'Noto Sans KR', sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      padding-bottom: 40px;
+    }
+
+    /* ── Header ── */
+    .header {
+      background: var(--red);
+      color: #fff;
+      padding: 28px 20px 24px;
+      position: relative;
+      overflow: hidden;
+    }
+    .header::before {
+      content: '';
+      position: absolute;
+      top: -30px; right: -20px;
+      width: 140px; height: 140px;
+      background: rgba(255,255,255,0.08);
+      border-radius: 50%;
+    }
+    .header::after {
+      content: '';
+      position: absolute;
+      bottom: -50px; right: 30px;
+      width: 100px; height: 100px;
+      background: rgba(255,255,255,0.06);
+      border-radius: 50%;
+    }
+    .header-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      background: rgba(255,255,255,0.18);
+      border: 1px solid rgba(255,255,255,0.3);
+      border-radius: 100px;
+      padding: 4px 12px;
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 0.08em;
+      margin-bottom: 12px;
+      text-transform: uppercase;
+    }
+    .header-badge::before {
+      content: '⚠';
+      font-size: 12px;
+    }
+    .header h1 {
+      font-size: 28px;
+      font-weight: 900;
+      line-height: 1.2;
+      position: relative;
+      z-index: 1;
+    }
+    .header p {
+      margin-top: 8px;
+      font-size: 13px;
+      opacity: 0.85;
+      font-weight: 400;
+      position: relative;
+      z-index: 1;
+    }
+
+    /* ── Form Card ── */
+    .form-wrap {
+      padding: 20px 16px 0;
+    }
+
+    .card {
+      background: var(--card);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      padding: 24px 20px;
+      margin-bottom: 14px;
+    }
+
+    .section-label {
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: var(--red);
+      margin-bottom: 10px;
+    }
+
+    label {
+      display: block;
+      font-size: 14px;
+      font-weight: 700;
+      color: var(--text);
+      margin-bottom: 8px;
+    }
+    label .req {
+      color: var(--red);
+      margin-left: 2px;
+    }
+
+    input[type="text"],
+    textarea {
+      width: 100%;
+      border: 2px solid var(--border);
+      border-radius: 12px;
+      padding: 14px 16px;
+      font-size: 15px;
+      font-family: inherit;
+      color: var(--text);
+      background: #FAFAF8;
+      transition: border-color 0.2s, box-shadow 0.2s;
+      outline: none;
+      -webkit-appearance: none;
+    }
+    input[type="text"]:focus,
+    textarea:focus {
+      border-color: var(--red);
+      box-shadow: 0 0 0 3px rgba(232,50,26,0.12);
+      background: #fff;
+    }
+    textarea {
+      resize: none;
+      height: 130px;
+      line-height: 1.6;
+    }
+    input::placeholder, textarea::placeholder {
+      color: #BBBBBB;
+      font-weight: 400;
+    }
+
+    /* ── Photo Section ── */
+    .photo-actions {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+      margin-bottom: 16px;
+    }
+    .photo-btn {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      padding: 16px 10px;
+      border-radius: 12px;
+      border: 2px dashed var(--border);
+      background: #FAFAF8;
+      cursor: pointer;
+      font-family: inherit;
+      font-size: 12px;
+      font-weight: 700;
+      color: var(--text-sub);
+      transition: all 0.2s;
+      -webkit-tap-highlight-color: transparent;
+    }
+    .photo-btn:active {
+      background: #F0EAE4;
+      border-color: var(--red-light);
+      color: var(--red);
+    }
+    .photo-btn .icon {
+      font-size: 26px;
+      line-height: 1;
+    }
+    input[type="file"] { display: none; }
+
+    /* ── Preview Grid ── */
+    .preview-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 8px;
+    }
+    .preview-item {
+      position: relative;
+      aspect-ratio: 1;
+      border-radius: 10px;
+      overflow: hidden;
+      background: #EEE;
+      animation: popIn 0.25s cubic-bezier(0.34,1.56,0.64,1);
+    }
+    @keyframes popIn {
+      from { transform: scale(0.7); opacity: 0; }
+      to   { transform: scale(1);   opacity: 1; }
+    }
+    .preview-item img {
+      width: 100%; height: 100%;
+      object-fit: cover;
+      display: block;
+    }
+    .preview-item .remove-btn {
+      position: absolute;
+      top: 4px; right: 4px;
+      width: 22px; height: 22px;
+      background: rgba(0,0,0,0.65);
+      border: none;
+      border-radius: 50%;
+      color: #fff;
+      font-size: 13px;
+      line-height: 22px;
+      text-align: center;
+      cursor: pointer;
+      display: flex; align-items: center; justify-content: center;
+      padding: 0;
+    }
+    .photo-count {
+      margin-top: 10px;
+      font-size: 12px;
+      color: var(--text-sub);
+      text-align: right;
+    }
+    .photo-count span {
+      color: var(--red);
+      font-weight: 700;
+    }
+
+    /* ── Submit Button ── */
+    .submit-btn {
+      width: 100%;
+      padding: 18px;
+      background: linear-gradient(135deg, var(--red) 0%, var(--red-dark) 100%);
+      color: #fff;
+      border: none;
+      border-radius: var(--radius);
+      font-size: 17px;
+      font-weight: 900;
+      font-family: inherit;
+      cursor: pointer;
+      box-shadow: 0 6px 20px rgba(232,50,26,0.4);
+      transition: transform 0.15s, box-shadow 0.15s, opacity 0.2s;
+      letter-spacing: 0.02em;
+      -webkit-tap-highlight-color: transparent;
+      position: relative;
+      overflow: hidden;
+    }
+    .submit-btn:active:not(:disabled) {
+      transform: scale(0.97);
+      box-shadow: 0 2px 10px rgba(232,50,26,0.3);
+    }
+    .submit-btn:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+    }
+
+    /* ── Status Messages ── */
+    .status {
+      display: none;
+      margin: 16px 16px 0;
+      padding: 16px 18px;
+      border-radius: var(--radius);
+      font-size: 14px;
+      font-weight: 700;
+      text-align: center;
+      animation: slideUp 0.3s ease;
+    }
+    @keyframes slideUp {
+      from { transform: translateY(10px); opacity: 0; }
+      to   { transform: translateY(0); opacity: 1; }
+    }
+    .status.loading {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      background: #FFF8E1;
+      color: #E65100;
+      border: 1.5px solid #FFE082;
+    }
+    .status.success {
+      display: block;
+      background: #E8F5E9;
+      color: #1B5E20;
+      border: 1.5px solid #A5D6A7;
+      font-size: 15px;
+      line-height: 1.6;
+    }
+    .status.error {
+      display: block;
+      background: #FFEBEE;
+      color: #B71C1C;
+      border: 1.5px solid #FFCDD2;
+    }
+
+    /* ── Spinner ── */
+    .spinner {
+      width: 20px; height: 20px;
+      border: 3px solid rgba(230,81,0,0.3);
+      border-top-color: #E65100;
+      border-radius: 50%;
+      animation: spin 0.8s linear infinite;
+      flex-shrink: 0;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    /* ── Notice ── */
+    .notice {
+      margin: 8px 16px 0;
+      padding: 12px 16px;
+      background: rgba(232,50,26,0.06);
+      border-left: 3px solid var(--red);
+      border-radius: 0 8px 8px 0;
+      font-size: 12px;
+      color: var(--text-sub);
+      line-height: 1.6;
+    }
+    .notice strong { color: var(--red); }
+  </style>
+</head>
+<body>
+
+  <!-- Header -->
+  <div class="header">
+    <div class="header-badge">안전 신고 시스템</div>
+    <h1>아차사고 신고</h1>
+    <p>위험 순간을 빠르게 신고하고 안전한 일터를 만들어요</p>
+  </div>
+
+  <!-- Form -->
+  <div class="form-wrap">
+
+    <!-- Name -->
+    <div class="card">
+      <div class="section-label">신고자 정보</div>
+      <label for="name">이름 <span class="req">*</span></label>
+      <input type="text" id="name" placeholder="홍길동" autocomplete="name" />
+    </div>
+
+    <!-- Content -->
+    <div class="card">
+      <div class="section-label">사고 내용</div>
+      <label for="content">어떤 상황이었나요? <span class="req">*</span></label>
+      <textarea id="content" placeholder="언제, 어디서, 어떤 위험 상황이 발생했는지 최대한 자세히 적어주세요."></textarea>
+    </div>
+
+    <!-- Photo -->
+    <div class="card">
+      <div class="section-label">현장 사진</div>
+      <label>사진 첨부 <span class="req">*</span> (최소 1장)</label>
+
+      <div class="photo-actions">
+        <button class="photo-btn" onclick="document.getElementById('cameraInput').click()">
+          <span class="icon">📷</span>카메라 촬영
+        </button>
+        <button class="photo-btn" onclick="document.getElementById('galleryInput').click()">
+          <span class="icon">🖼️</span>갤러리 선택
+        </button>
+      </div>
+
+      <!-- Camera: single capture -->
+      <input type="file" id="cameraInput" accept="image/*" capture="environment" />
+      <!-- Gallery: multiple -->
+      <input type="file" id="galleryInput" accept="image/*" multiple />
+
+      <div class="preview-grid" id="previewGrid"></div>
+      <div class="photo-count" id="photoCount" style="display:none">
+        현재 <span id="photoNum">0</span>장 선택됨
+      </div>
+    </div>
+
+    <!-- Submit -->
+    <button class="submit-btn" id="submitBtn" onclick="submitReport()">
+      🚨 신고 제출하기
+    </button>
+
+    <div class="notice">
+      <strong>안내:</strong> 제출된 내용은 환경안전팀에에 즉시 전달됩니다.
+    </div>
+  </div>
+
+  <!-- Status -->
+  <div class="status loading" id="statusLoading">
+    <div class="spinner"></div>제출 중...
+  </div>
+  <div class="status success" id="statusSuccess">
+    ✅ 신고가 접수되었습니다.<br>감사합니다!<br><br>
+    <span style="font-size:13px;font-weight:400;">검토 후 조치하겠습니다.</span>
+  </div>
+  <div class="status error" id="statusError">
+    ❌ <span id="errorMsg">오류가 발생했습니다. 다시 시도해주세요.</span>
+  </div>
+
+  <script>
+    // ── 구글 앱스 스크립트 웹 앱 URL (배포 후 여기에 붙여넣으세요) ──
+    const GAS_URL = 'https://script.google.com/macros/s/AKfycbw7RGWcWdVpY6drwmrwh89E-ZdjCOBe_CXRP4CKPxTbOhG2VYHa14D5AijfeW2xF2_C/exec';
+
+    // ── 이미지 관리 ──
+    let fileList = [];
+
+    function addFiles(files) {
+      Array.from(files).forEach(file => {
+        if (!file.type.startsWith('image/')) return;
+        fileList.push(file);
+        renderPreview(file, fileList.length - 1);
+      });
+      updateCount();
+    }
+
+    function renderPreview(file, idx) {
+      const reader = new FileReader();
+      reader.onload = e => {
+        const grid = document.getElementById('previewGrid');
+        const wrap = document.createElement('div');
+        wrap.className = 'preview-item';
+        wrap.dataset.idx = idx;
+        wrap.innerHTML = `
+          <img src="${e.target.result}" alt="사진 미리보기" />
+          <button class="remove-btn" onclick="removePhoto(${idx})">✕</button>`;
+        grid.appendChild(wrap);
+      };
+      reader.readAsDataURL(file);
+    }
+
+    function removePhoto(idx) {
+      fileList[idx] = null; // mark removed
+      const item = document.querySelector(`.preview-item[data-idx="${idx}"]`);
+      if (item) item.remove();
+      updateCount();
+    }
+
+    function updateCount() {
+      const count = fileList.filter(f => f !== null).length;
+      const el = document.getElementById('photoCount');
+      el.style.display = count > 0 ? 'block' : 'none';
+      document.getElementById('photoNum').textContent = count;
+    }
+
+    document.getElementById('cameraInput').addEventListener('change', e => addFiles(e.target.files));
+    document.getElementById('galleryInput').addEventListener('change', e => addFiles(e.target.files));
+
+    // ── 파일 → Base64 변환 ──
+    function toBase64(file) {
+      return new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onload = () => resolve(reader.result.split(',')[1]);
+        reader.onerror = reject;
+        reader.readAsDataURL(file);
+      });
+    }
+
+    // ── 상태 표시 ──
+    function showStatus(type) {
+      ['Loading','Success','Error'].forEach(t =>
+        document.getElementById('status' + t).style.display = 'none');
+      if (type) {
+        const el = document.getElementById('status' + type);
+        el.style.display = type === 'Loading' ? 'flex' : 'block';
+        el.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+      }
+    }
+
+    // ── 제출 ──
+    async function submitReport() {
+      const name    = document.getElementById('name').value.trim();
+      const content = document.getElementById('content').value.trim();
+      const photos  = fileList.filter(f => f !== null);
+
+      // Validation
+      if (!name)         { alert('이름을 입력해주세요.'); return; }
+      if (!content)      { alert('사고 내용을 입력해주세요.'); return; }
+      if (photos.length === 0) { alert('사진을 최소 1장 이상 첨부해주세요.'); return; }
+
+      const btn = document.getElementById('submitBtn');
+      btn.disabled = true;
+      showStatus('Loading');
+
+      try {
+        // 모든 사진을 Base64로 변환
+        const photosData = await Promise.all(photos.map(async f => ({
+          name: f.name,
+          type: f.type,
+          data: await toBase64(f)
+        })));
+
+        const payload = JSON.stringify({ name, content, photos: photosData });
+
+        // no-cors 모드로 전송 (CORS 오류 방지)
+        await fetch(GAS_URL, {
+          method: 'POST',
+          mode: 'no-cors',
+          headers: { 'Content-Type': 'application/json' },
+          body: payload
+        });
+
+        // no-cors는 항상 opaque response → 성공으로 간주
+        showStatus('Success');
+        document.getElementById('name').value = '';
+        document.getElementById('content').value = '';
+        fileList = [];
+        document.getElementById('previewGrid').innerHTML = '';
+        updateCount();
+
+      } catch (err) {
+        console.error(err);
+        document.getElementById('errorMsg').textContent =
+          '전송 중 오류가 발생했습니다. 인터넷 연결을 확인하고 다시 시도해주세요.';
+        showStatus('Error');
+      } finally {
+        btn.disabled = false;
+      }
+    }
+  </script>
+</body>
+</html>
