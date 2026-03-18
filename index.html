@@ -269,13 +269,23 @@
 
     /* ── Status Messages ── */
     .status {
-      display: none;
+      display: none;      /* JS가 직접 show/hide 제어 — 여기서는 무조건 none */
       margin: 16px 16px 0;
       padding: 16px 18px;
       border-radius: var(--radius);
       font-size: 14px;
       font-weight: 700;
       text-align: center;
+    }
+    .status.show-loading {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      animation: slideUp 0.3s ease;
+    }
+    .status.show-block {
+      display: block;
       animation: slideUp 0.3s ease;
     }
     @keyframes slideUp {
@@ -283,16 +293,11 @@
       to   { transform: translateY(0); opacity: 1; }
     }
     .status.loading {
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      gap: 10px;
       background: #FFF8E1;
       color: #E65100;
       border: 1.5px solid #FFE082;
     }
     .status.success {
-      display: block;
       background: #E8F5E9;
       color: #1B5E20;
       border: 1.5px solid #A5D6A7;
@@ -300,7 +305,6 @@
       line-height: 1.6;
     }
     .status.error {
-      display: block;
       background: #FFEBEE;
       color: #B71C1C;
       border: 1.5px solid #FFCDD2;
@@ -398,7 +402,7 @@
   </div>
   <div class="status success" id="statusSuccess">
     ✅ 신고가 접수되었습니다.<br>감사합니다!<br><br>
-    <span style="font-size:13px;font-weight:400;">검토 후 조치하겠습니다.</span>
+    <span style="font-size:13px;font-weight:400;">환경안전팀에서서 검토 후 조치하겠습니다.</span>
   </div>
   <div class="status error" id="statusError">
     ❌ <span id="errorMsg">오류가 발생했습니다. 다시 시도해주세요.</span>
@@ -406,7 +410,7 @@
 
   <script>
     // ── 구글 앱스 스크립트 웹 앱 URL (배포 후 여기에 붙여넣으세요) ──
-    const GAS_URL = 'https://script.google.com/macros/s/AKfycbw7RGWcWdVpY6drwmrwh89E-ZdjCOBe_CXRP4CKPxTbOhG2VYHa14D5AijfeW2xF2_C/exec';
+    const GAS_URL = 'https://script.google.com/macros/s/AKfycbyPWa8b5XUSSyyYyxtFAsfvT5DAUUuM7Ro31TwN0ipkgHET739lxVnloA_Wid5LJA2A/exec';
 
     // ── 이미지 관리 ──
     let fileList = [];
@@ -464,11 +468,13 @@
 
     // ── 상태 표시 ──
     function showStatus(type) {
-      ['Loading','Success','Error'].forEach(t =>
-        document.getElementById('status' + t).style.display = 'none');
+      ['Loading','Success','Error'].forEach(t => {
+        const el = document.getElementById('status' + t);
+        el.classList.remove('show-loading', 'show-block');
+      });
       if (type) {
         const el = document.getElementById('status' + type);
-        el.style.display = type === 'Loading' ? 'flex' : 'block';
+        el.classList.add(type === 'Loading' ? 'show-loading' : 'show-block');
         el.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
       }
     }
