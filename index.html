@@ -125,6 +125,7 @@
     }
 
     input[type="text"],
+    input[type="datetime-local"],
     textarea {
       width: 100%;
       border: 2px solid var(--border);
@@ -139,10 +140,14 @@
       -webkit-appearance: none;
     }
     input[type="text"]:focus,
+    input[type="datetime-local"]:focus,
     textarea:focus {
       border-color: var(--red);
       box-shadow: 0 0 0 3px rgba(232,50,26,0.12);
       background: #fff;
+    }
+    input[type="datetime-local"] {
+      color-scheme: light;
     }
     textarea {
       resize: none;
@@ -269,7 +274,7 @@
 
     /* ── Status Messages ── */
     .status {
-      display: none;      /* JS가 직접 show/hide 제어 — 여기서는 무조건 none */
+      display: none;
       margin: 16px 16px 0;
       padding: 16px 18px;
       border-radius: var(--radius);
@@ -354,11 +359,25 @@
       <input type="text" id="name" placeholder="홍길동" autocomplete="name" />
     </div>
 
+    <!-- 발생 일시 (신규 추가) -->
+    <div class="card">
+      <div class="section-label">발생 일시</div>
+      <label for="incidentDatetime">사고 발생 일시 <span class="req">*</span></label>
+      <input type="datetime-local" id="incidentDatetime" />
+    </div>
+
     <!-- Content -->
     <div class="card">
       <div class="section-label">사고 내용</div>
       <label for="content">어떤 상황이었나요? <span class="req">*</span></label>
       <textarea id="content" placeholder="언제, 어디서, 어떤 위험 상황이 발생했는지 최대한 자세히 적어주세요."></textarea>
+    </div>
+
+    <!-- 개선 방안 (신규 추가) -->
+    <div class="card">
+      <div class="section-label">개선 방안</div>
+      <label for="improvement">재발 방지를 위한 개선 방안 <span class="req">*</span></label>
+      <textarea id="improvement" placeholder="이 사고를 예방하기 위해 어떤 조치나 개선이 필요한지 의견을 적어주세요."></textarea>
     </div>
 
     <!-- Photo -->
@@ -392,7 +411,7 @@
     </button>
 
     <div class="notice">
-      <strong>안내:</strong> 제출된 내용은 환경안전팀에에 즉시 전달됩니다.
+      <strong>안내:</strong> 제출된 내용은 환경안전팀에 즉시 전달됩니다.
     </div>
   </div>
 
@@ -402,15 +421,25 @@
   </div>
   <div class="status success" id="statusSuccess">
     ✅ 신고가 접수되었습니다.<br>감사합니다!<br><br>
-    <span style="font-size:13px;font-weight:400;">환경안전팀에서서 검토 후 조치하겠습니다.</span>
+    <span style="font-size:13px;font-weight:400;">환경안전팀에서 검토 후 조치하겠습니다.</span>
   </div>
   <div class="status error" id="statusError">
     ❌ <span id="errorMsg">오류가 발생했습니다. 다시 시도해주세요.</span>
   </div>
 
   <script>
-    // ── 구글 앱스 스크립트 웹 앱 URL (배포 후 여기에 붙여넣으세요) ──
+    // ── 구글 앱스 스크립트 웹 앱 URL ──
     const GAS_URL = 'https://script.google.com/macros/s/AKfycbyPWa8b5XUSSyyYyxtFAsfvT5DAUUuM7Ro31TwN0ipkgHET739lxVnloA_Wid5LJA2A/exec';
+
+    // ── 페이지 로드 시 현재 시각으로 기본값 설정 ──
+    window.addEventListener('DOMContentLoaded', () => {
+      const now = new Date();
+      // datetime-local 형식: YYYY-MM-DDTHH:MM
+      const local = new Date(now.getTime() - now.getTimezoneOffset() * 60000)
+        .toISOString()
+        .slice(0, 16);
+      document.getElementById('incidentDatetime').value = local;
+    });
 
     // ── 이미지 관리 ──
     let fileList = [];
@@ -440,7 +469,7 @@
     }
 
     function removePhoto(idx) {
-      fileList[idx] = null; // mark removed
+      fileList[idx] = null;
       const item = document.querySelector(`.preview-item[data-idx="${idx}"]`);
       if (item) item.remove();
       updateCount();
@@ -481,30 +510,38 @@
 
     // ── 제출 ──
     async function submitReport() {
-      const name    = document.getElementById('name').value.trim();
-      const content = document.getElementById('content').value.trim();
-      const photos  = fileList.filter(f => f !== null);
+      const name            = document.getElementById('name').value.trim();
+      const incidentDatetime = document.getElementById('incidentDatetime').value;
+      const content         = document.getElementById('content').value.trim();
+      const improvement     = document.getElementById('improvement').value.trim();
+      const photos          = fileList.filter(f => f !== null);
 
       // Validation
-      if (!name)         { alert('이름을 입력해주세요.'); return; }
-      if (!content)      { alert('사고 내용을 입력해주세요.'); return; }
-      if (photos.length === 0) { alert('사진을 최소 1장 이상 첨부해주세요.'); return; }
+      if (!name)              { alert('이름을 입력해주세요.'); return; }
+      if (!incidentDatetime)  { alert('사고 발생 일시를 선택해주세요.'); return; }
+      if (!content)           { alert('사고 내용을 입력해주세요.'); return; }
+      if (!improvement)       { alert('개선 방안을 입력해주세요.'); return; }
+      if (photos.length === 0){ alert('사진을 최소 1장 이상 첨부해주세요.'); return; }
 
       const btn = document.getElementById('submitBtn');
       btn.disabled = true;
       showStatus('Loading');
 
       try {
-        // 모든 사진을 Base64로 변환
         const photosData = await Promise.all(photos.map(async f => ({
           name: f.name,
           type: f.type,
           data: await toBase64(f)
         })));
 
-        const payload = JSON.stringify({ name, content, photos: photosData });
+        const payload = JSON.stringify({
+          name,
+          incidentDatetime,
+          content,
+          improvement,
+          photos: photosData
+        });
 
-        // no-cors 모드로 전송 (CORS 오류 방지)
         await fetch(GAS_URL, {
           method: 'POST',
           mode: 'no-cors',
@@ -512,10 +549,11 @@
           body: payload
         });
 
-        // no-cors는 항상 opaque response → 성공으로 간주
         showStatus('Success');
         document.getElementById('name').value = '';
+        document.getElementById('incidentDatetime').value = '';
         document.getElementById('content').value = '';
+        document.getElementById('improvement').value = '';
         fileList = [];
         document.getElementById('previewGrid').innerHTML = '';
         updateCount();
